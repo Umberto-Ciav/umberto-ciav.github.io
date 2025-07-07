@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live Spectrogram</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* Spectrogram‑specific bar styling */
+    #spectrogram {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 4px;
+      height: 300px;
+      margin-top: 2rem;
+    }
+    .bar {
+      flex: 1;
+      background: grey;
+      width: 12px;
+      border-radius: 4px 4px 0 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Live Spectrogram</h1>
+    <p>Allow microphone access and watch the seven-band spectrum.</p>
+    <div id="spectrogram">
+      <!-- Seven bars; colors set by JS -->
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </div>
+    <div class="back-link">
+      <a href="index.html">← Back to Home</a>
+    </div>
+  </div>
+  <script src="js/spectrogram.js"></script>
+</body>
+</html>
