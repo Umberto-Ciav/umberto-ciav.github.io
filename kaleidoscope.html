@@ -27,12 +27,12 @@
       <label for="slices">Slices:</label>
       <input type="number" id="slices" min="1" max="20" value="6">
 
-      <label for="rotation">Rotation:</label>
-      <select id="rotation">
-        <option value="clockwise">Clockwise</option>
-        <option value="counter">Counterclockwise</option>
-      </select>
+      <label>
+        <input type="checkbox" id="flipVertical"> Use bottom of image instead
+      </label>
 
+      <button id="zoomIn" class="waveform-button">➕ Zoom In</button>
+      <button id="zoomOut" class="waveform-button">➖ Zoom Out</button>
       <button id="download" class="waveform-button">💾 Download</button>
     </div>
     <canvas id="kaleidoCanvas" width="500" height="500"></canvas>
@@ -46,12 +46,14 @@
     const ctx = canvas.getContext('2d');
     const fileInput = document.getElementById('imageUpload');
     const sliceInput = document.getElementById('slices');
-    const rotationSelect = document.getElementById('rotation');
+    const flipCheckbox = document.getElementById('flipVertical');
     const downloadBtn = document.getElementById('download');
+    const zoomInBtn = document.getElementById('zoomIn');
+    const zoomOutBtn = document.getElementById('zoomOut');
 
     let image = null;
     let slices = parseInt(sliceInput.value);
-    let rotateClockwise = true;
+    let zoom = 1;
 
     function drawKaleidoscope() {
       if (!image) return;
@@ -64,13 +66,19 @@
 
       for (let i = 0; i < slices; i++) {
         ctx.save();
-        const a = rotateClockwise ? i * angle : -i * angle;
-        ctx.rotate(a);
+        ctx.rotate(i * angle);
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.arc(0, 0, width / 2, 0, angle);
         ctx.closePath();
         ctx.clip();
+
+        if (flipCheckbox.checked) {
+          ctx.scale(1, -1);
+        }
+
+        const scale = Math.min(width / image.width, height / image.height) * zoom;
+        ctx.scale(scale, scale);
         ctx.drawImage(image, -image.width / 2, -image.height / 2);
         ctx.restore();
       }
@@ -85,6 +93,7 @@
         const img = new Image();
         img.onload = () => {
           image = img;
+          zoom = 1;
           drawKaleidoscope();
         };
         img.src = event.target.result;
@@ -97,8 +106,17 @@
       drawKaleidoscope();
     });
 
-    rotationSelect.addEventListener('change', () => {
-      rotateClockwise = rotationSelect.value === 'clockwise';
+    flipCheckbox.addEventListener('change', () => {
+      drawKaleidoscope();
+    });
+
+    zoomInBtn.addEventListener('click', () => {
+      zoom *= 1.1;
+      drawKaleidoscope();
+    });
+
+    zoomOutBtn.addEventListener('click', () => {
+      zoom /= 1.1;
       drawKaleidoscope();
     });
 

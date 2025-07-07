@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retro Camera</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    canvas {
+      max-width: 100%;
+      border: 1px solid #ccc;
+      margin-top: 1rem;
+    }
+    .controls {
+      margin-top: 1rem;
+    }
+    .controls label,
+    .controls input,
+    .controls button {
+      margin: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>✨ Retro Camera</h1>
+    <input type="file" id="imageUpload" accept="image/*" />
+    <div class="controls">
+      <button id="applyGrains">Grains</button>
+      <button id="applyBurns">Burns</button>
+      <button id="applyBW">B&amp;W</button>
+      <button id="download">💾 Download</button>
+    </div>
+    <canvas id="photoCanvas" width="500" height="500"></canvas>
+    <div class="back-link">
+      <a href="index.html">← Back to Home</a>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('photoCanvas');
+    const ctx = canvas.getContext('2d');
+    const fileInput = document.getElementById('imageUpload');
+    const downloadBtn = document.getElementById('download');
+
+    const applyGrains = document.getElementById('applyGrains');
+    const applyBurns = document.getElementById('applyBurns');
+    const applyBW = document.getElementById('applyBW');
+
+    let image = new Image();
+
+    fileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = event => {
+        image.onload = () => {
+          canvas.width = image.width;
+          canvas.height = image.height;
+          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        };
+        image.src = event.target.result;
+      };
+      if (file) reader.readAsDataURL(file);
+    });
+
+    function applyFilter(filterFn) {
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+      let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      filterFn(imageData);
+      ctx.putImageData(imageData, 0, 0);
+    }
+
+    function grainsFilter(imageData) {
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const grain = (Math.random() - 0.5) * 50;
+        data[i] += grain;
+        data[i + 1] += grain;
+        data[i + 2] += grain;
+      }
+    }
+
+    function burnsFilter(imageData) {
+      grainsFilter(imageData);
+      const { width, height } = imageData;
+      const data = imageData.data;
+      const radius = Math.min(width, height) / 3;
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const dx = x - width;
+          const dy = y - height;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const idx = (y * width + x) * 4;
+          if (dist < radius) {
+            const factor = 1 - dist / radius;
+            data[idx] += 150 * factor;
+            data[idx + 1] += 50 * factor;
+            data[idx + 2] += 0;
+          }
+        }
+      }
+    }
+
+    function bwFilter(imageData) {
+      grainsFilter(imageData);
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        data[i] = avg;
+        data[i + 1] = avg;
+        data[i + 2] = avg;
+      }
+    }
+
+    applyGrains.addEventListener('click', () => applyFilter(grainsFilter));
+    applyBurns.addEventListener('click', () => applyFilter(burnsFilter));
+    applyBW.addEventListener('click', () => applyFilter(bwFilter));
+
+    downloadBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = 'retro_image.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  </script>
+</body>
+</html>
