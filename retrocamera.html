@@ -19,16 +19,35 @@
     .controls button {
       margin: 0.25rem;
     }
+    .effect-button {
+      padding: 0.5rem 1rem;
+      border: 2px solid #333;
+      background: #f0f0f0;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+    .effect-button.active {
+      background: #4CAF50;
+      color: white;
+      border-color: #45a049;
+    }
+    .effect-button:hover {
+      background: #e0e0e0;
+    }
+    .effect-button.active:hover {
+      background: #45a049;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Retro Camera</h1>
+    <h1> Retro Camera</h1>
     <input type="file" id="imageUpload" accept="image/*" />
     <div class="controls">
-      <button id="applyGrains">Grains</button>
-      <button id="applyBurns">Burns</button>
-      <button id="applyBW">B&amp;W</button>
+      <button id="applyGrains" class="effect-button">Grains</button>
+      <button id="applyBurns" class="effect-button">Burns</button>
+      <button id="applyBW" class="effect-button">B&amp;W</button>
       <button id="download">💾 Download</button>
     </div>
     <canvas id="photoCanvas" width="500" height="500"></canvas>
@@ -45,6 +64,14 @@
     const applyBurns = document.getElementById('applyBurns');
     const applyBW = document.getElementById('applyBW');
     let image = new Image();
+    
+    // Track active effects
+    const activeEffects = {
+      grains: false,
+      burns: false,
+      bw: false
+    };
+    
     fileInput.addEventListener('change', e => {
       const file = e.target.files[0];
       const reader = new FileReader();
@@ -52,21 +79,55 @@
         image.onload = () => {
           canvas.width = image.width;
           canvas.height = image.height;
+          // Draw the image and apply automatic desaturation
           ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+          let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          
+          // Apply desaturation automatically on upload
+          desaturate(imageData.data, 0.3);
+          ctx.putImageData(imageData, 0, 0);
+          
+          // Then apply any other active effects
+          applyAllActiveEffects();
         };
         image.src = event.target.result;
       };
       if (file) reader.readAsDataURL(file);
     });
-    function applyFilter(filterFn) {
+    
+    function applyAllActiveEffects() {
+      // Start with original image
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
       let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      filterFn(imageData);
+      
+      // Always apply desaturation first
+      desaturate(imageData.data, 0.3);
+      
+      // Apply effects in order
+      if (activeEffects.grains) {
+        grainsFilter(imageData);
+      }
+      if (activeEffects.burns) {
+        burnsFilter(imageData);
+      }
+      if (activeEffects.bw) {
+        bwFilter(imageData);
+      }
+      
       ctx.putImageData(imageData, 0, 0);
     }
     
+    function toggleEffect(effectName, button) {
+      activeEffects[effectName] = !activeEffects[effectName];
+      button.classList.toggle('active', activeEffects[effectName]);
+      
+      if (image.src) {
+        applyAllActiveEffects();
+      }
+    }
+    
     // Enhanced desaturation function
-    function desaturate(data, amount = 0.3) {
+    function desaturate(data, amount = 0.4) {
       for (let i = 0; i < data.length; i += 4) {
         const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
         data[i] = data[i] * (1 - amount) + gray * amount;
@@ -79,7 +140,7 @@
     function grainsFilter(imageData) {
       const data = imageData.data;
       
-      // Apply desaturation first
+      // Apply additional desaturation for grains effect
       desaturate(data, 0.4);
       
       // Enhanced grain effect with more variation
@@ -104,17 +165,10 @@
       }
     }
     
-    function burnsFilter(imageData) {
-      const data = imageData.data;
-      
-      // Apply desaturation
-      desaturate(data, 0.3);
-      
-      // Apply grains first
-      grainsFilter(imageData);
-      
+function burnsFilter(imageData) {
       const { width, height } = imageData;
-      const radius = Math.min(width, height) / 3;
+      const data = imageData.data;
+      const radius = Math.min(width, height) / 1.5;
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
           const dx = x - width;
@@ -123,8 +177,8 @@
           const idx = (y * width + x) * 4;
           if (dist < radius) {
             const factor = 1 - dist / radius;
-            data[idx] += 150 * factor;
-            data[idx + 1] += 50 * factor;
+            data[idx] += 250 * factor;
+            data[idx + 1] += 150 * factor;
             data[idx + 2] += 0;
           }
         }
@@ -133,9 +187,6 @@
     
     function bwFilter(imageData) {
       const data = imageData.data;
-      
-      // Apply grains first
-      grainsFilter(imageData);
       
       // Convert to black and white
       for (let i = 0; i < data.length; i += 4) {
@@ -146,9 +197,11 @@
       }
     }
     
-    applyGrains.addEventListener('click', () => applyFilter(grainsFilter));
-    applyBurns.addEventListener('click', () => applyFilter(burnsFilter));
-    applyBW.addEventListener('click', () => applyFilter(bwFilter));
+    // Event listeners for toggle buttons
+    applyGrains.addEventListener('click', () => toggleEffect('grains', applyGrains));
+    applyBurns.addEventListener('click', () => toggleEffect('burns', applyBurns));
+    applyBW.addEventListener('click', () => toggleEffect('bw', applyBW));
+    
     downloadBtn.addEventListener('click', () => {
       const link = document.createElement('a');
       link.download = 'retro_image.png';
