@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frequency Generator</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Frequency Generator</h1>
+    <div class="controls">
+      <input type="range" id="frequency-slider" min="20" max="20000" value="440">
+      <span id="frequency-value">440 Hz</span>
+    </div>
+    <button id="play-toggle">&#x25B6; Play</button>
+    <div class="waveforms">
+      <button data-waveform="sine" class="waveform-button active">&#x223F; Sine</button>
+      <button data-waveform="square" class="waveform-button">&#x25A1; Square</button>
+      <button data-waveform="triangle" class="waveform-button">&#x25B3; Triangle</button>
+      <button data-waveform="sawtooth" class="waveform-button">&#x238D; Sawtooth</button>
+    </div>
+    <div class="back-link">
+      <a href="index.html">← Back to Home</a>
+    </div>
+  </div>
+  <script src="js/frequency.js"></script>
+</body>
+</html>
