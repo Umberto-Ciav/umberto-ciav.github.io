@@ -1,4 +1,4 @@
-// Live 7‑band spectrogram from microphone
+// Live 7‑band spectrogram mapped to 40–3520 Hz (double‑bass → violin)
 (async function() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -7,14 +7,29 @@
     const analyser = audioCtx.createAnalyser();
 
     analyser.fftSize = 2048;
-    analyser.smoothingTimeConstant = 0.7;  // smooth out rapid jumps
+    analyser.smoothingTimeConstant = 0.85;  // heavier smoothing
     source.connect(analyser);
 
     const bars = Array.from(document.querySelectorAll('.bar'));
     const bandCount = bars.length;
     const freqData = new Uint8Array(analyser.frequencyBinCount);
+    const sampleRate = audioCtx.sampleRate; // e.g. 44100
+    const binCount = analyser.frequencyBinCount; // fftSize/2
 
-    // Seven distinct rainbow colors
+    // Define 7 bands from 40 Hz up to 3520 Hz
+    const fMin = 40;
+    const fMax = 3520;
+    const bandWidth = (fMax - fMin) / bandCount;
+    const bandRanges = bars.map((_, i) => {
+      const low = fMin + i * bandWidth;
+      const high = fMin + (i + 1) * bandWidth;
+      // convert freq to bin indices:
+      const startBin = Math.floor(low / sampleRate * binCount);
+      const endBin = Math.min(binCount, Math.ceil(high / sampleRate * binCount));
+      return { startBin, endBin };
+    });
+
+    // Rainbow colors (distinct)
     const colors = [
       '#E53935', // red
       '#FB8C00', // orange
@@ -29,18 +44,15 @@
     function update() {
       analyser.getByteFrequencyData(freqData);
 
-      const binSize = Math.floor(freqData.length / bandCount);
       bars.forEach((bar, i) => {
+        const { startBin, endBin } = bandRanges[i];
         let sum = 0;
-        const start = Math.floor(i * binSize);
-        const end = Math.floor((i + 1) * binSize);
-        for (let j = start; j < end; j++) sum += freqData[j];
-        const avg = sum / (end - start);
-
-        // amplify mid/high bands: scale avg so all bars can move
-        let percent = avg / 255;
-        percent = Math.min(1, percent * 1.8);     // boost by 1.8×, clamp at 1
-        const height = Math.max(4, percent * 350); // match container height
+        for (let j = startBin; j < endBin; j++) {
+          sum += freqData[j];
+        }
+        const avg = sum / Math.max(1, endBin - startBin);
+        const percent = avg / 255;              // 0..1, no extra boost
+        const height = Math.max(4, percent * 350); // same container height
 
         bar.style.height = `${height}px`;
       });
