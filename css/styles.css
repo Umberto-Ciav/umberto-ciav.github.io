@@ -1,3 +1,4 @@
+/* General page layout */
 body {
   margin: 0;
   font-family: sans-serif;
@@ -12,17 +13,55 @@ body {
   background: white;
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
   max-width: 500px;
 }
 
+/* Navigation list on index.html */
+nav ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+  text-align: left;
+}
+
+nav li {
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+}
+
+nav li a {
+  text-decoration: none;
+  color: #001f3f;
+}
+
+nav li a:hover {
+  text-decoration: underline;
+}
+
+nav li.freq::before {
+  content: "\223F\0020"; /* Sine wave character with space */
+  color: #E53935;
+}
+
+nav li.spectro::before {
+  content: "\266A\0020"; /* Musical note */
+  color: #1E88E5;
+}
+
+nav li.kaleidoscope::before {
+  content: "\1F4F8\0020"; /* Camera with flash (📸) */
+  color: #8E24AA;
+}
+
+/* Frequency generator styling */
 .controls {
   margin-bottom: 1rem;
 }
 
 .waveforms {
-  margin-top: 2rem; /* increased space above waveform buttons */
+  margin-top: 2rem; /* Space above waveform buttons */
 }
 
 .waveform-button {
@@ -42,7 +81,7 @@ body {
 
 #play-toggle {
   margin-top: 1rem;
-  margin-bottom: 2rem; /* increased bottom margin for more space */
+  margin-bottom: 2rem; /* Space below play button */
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   border: none;
