@@ -7,6 +7,3 @@ This is a github page made using generative AI as an experiment and learning opp
 On this page you will currently find:
 
 - a frequency generator
-
-
- 
