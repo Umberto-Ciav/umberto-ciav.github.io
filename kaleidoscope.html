@@ -1,312 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kaleidoscope Effect</title>
-    <link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kaleidoscope</title>
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-    <a href="index.html" class="back-button">← Back to Hub</a>
-    
-    <div class="container">
-        <h1>Kaleidoscope Effect</h1>
-        
-        <div class="upload-section">
-            <div class="file-input-wrapper">
-                <input type="file" id="imageInput" class="file-input" accept="image/*">
-                <button class="file-input-button">Upload Image</button>
-            </div>
-        </div>
-
-        <div class="controls">
-            <div class="control-group">
-                <label for="segments">Segments</label>
-                <input type="number" id="segments" min="1" max="20" value="6">
-            </div>
-            <div class="control-group">
-                <label for="rotation">Rotation</label>
-                <input type="number" id="rotation" min="0" max="360" value="0">
-            </div>
-            <div class="control-group">
-                <label for="scale">Scale</label>
-                <input type="number" id="scale" min="0.1" max="3" step="0.1" value="1">
-            </div>
-            <div class="control-group">
-                <label for="centerMirror">Center Mirror</label>
-                <input type="checkbox" id="centerMirror">
-            </div>
-        </div>
-
-        <div class="canvas-container">
-            <canvas id="kaleidoscopeCanvas" width="600" height="600"></canvas>
-        </div>
-
-        <div class="upload-section">
-            <button id="downloadBtn" class="file-input-button" style="background: linear-gradient(45deg, #48cae4, #845ec2);">
-                Download Image
-            </button>
-        </div>
-
-        <div class="info">
-            Upload an image and adjust the controls to create beautiful kaleidoscope patterns!<br>
-            <em>Double-click the canvas to toggle auto-rotation</em>
-        </div>
+  <div class="container">
+    <h1>Kaleidoscope</h1>
+    <canvas id="kaleidoscope" width="400" height="400" style="border:1px solid #ccc;"></canvas>
+    <div class="controls">
+      <button id="start-button" class="waveform-button">Start</button>
+      <button id="stop-button" class="waveform-button">Stop</button>
     </div>
+    <div class="back-link">
+      <a href="index.html">&#8592; Back to Home</a>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById('kaleidoscope');
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
 
-    <script>
-        const canvas = document.getElementById('kaleidoscopeCanvas');
-        const ctx = canvas.getContext('2d');
-        const imageInput = document.getElementById('imageInput');
-        const segmentsInput = document.getElementById('segments');
-        const rotationInput = document.getElementById('rotation');
-        const scaleInput = document.getElementById('scale');
-        const centerMirrorInput = document.getElementById('centerMirror');
-        const downloadBtn = document.getElementById('downloadBtn');
+    function drawPattern(time) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const sides = 6;
+      const radius = 150;
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
 
-        let currentImage = null;
-        let animationId = null;
-        let autoRotate = false;
-        let currentRotation = 0;
+      for (let i = 0; i < sides; i++) {
+        const angle = (i * 2 * Math.PI) / sides + time * 0.001;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
 
-        // Create a default gradient pattern
-        function drawDefaultPattern() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Create a radial gradient
-            const gradient = ctx.createRadialGradient(
-                canvas.width / 2, canvas.height / 2, 0,
-                canvas.width / 2, canvas.height / 2, canvas.width / 2
-            );
-            
-            gradient.addColorStop(0, '#ff6b6b');
-            gradient.addColorStop(0.3, '#feca57');
-            gradient.addColorStop(0.6, '#48cae4');
-            gradient.addColorStop(1, '#845ec2');
-            
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Add some geometric patterns
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-            for (let i = 0; i < 10; i++) {
-                ctx.beginPath();
-                ctx.arc(
-                    Math.random() * canvas.width,
-                    Math.random() * canvas.height,
-                    Math.random() * 50 + 10,
-                    0, Math.PI * 2
-                );
-                ctx.fill();
-            }
-            
-            createKaleidoscope();
-        }
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = `hsl(${(angle * 180 / Math.PI) % 360}, 100%, 70%)`;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+    }
 
-        function createKaleidoscope() {
-            const segments = parseInt(segmentsInput.value);
-            const rotation = parseFloat(rotationInput.value) + currentRotation;
-            const scale = parseFloat(scaleInput.value);
-            const centerMirror = centerMirrorInput.checked;
-            
-            // Create a temporary canvas to work with
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
-            const tempCtx = tempCanvas.getContext('2d');
-            
-            // Copy current canvas content to temp canvas
-            tempCtx.drawImage(canvas, 0, 0);
-            
-            // Clear main canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            
-            // Handle special case for 1 segment
-            if (segments === 1) {
-                ctx.save();
-                ctx.translate(centerX, centerY);
-                ctx.rotate(rotation * Math.PI / 180);
-                ctx.scale(scale, scale);
-                
-                if (currentImage) {
-                    const size = Math.max(currentImage.width, currentImage.height);
-                    if (centerMirror) {
-                        // Draw image from center outward (center of image goes to edges)
-                        ctx.drawImage(currentImage, -size/4, -size/4, size/2, size/2, -centerX, -centerY, canvas.width, canvas.height);
-                    } else {
-                        // Normal drawing (center of image stays in center)
-                        ctx.drawImage(currentImage, -size/2, -size/2, size, size);
-                    }
-                } else {
-                    ctx.drawImage(tempCanvas, -centerX, -centerY);
-                }
-                
-                ctx.restore();
-                return;
-            }
-            
-            const anglePerSegment = (Math.PI * 2) / segments;
-            
-            for (let i = 0; i < segments; i++) {
-                ctx.save();
-                
-                // Move to center
-                ctx.translate(centerX, centerY);
-                
-                // Rotate for this segment
-                ctx.rotate(i * anglePerSegment + (rotation * Math.PI / 180));
-                
-                // Scale
-                ctx.scale(scale, scale);
-                
-                // Create clipping path for this segment
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                if (segments === 2) {
-                    ctx.arc(0, 0, canvas.width, 0, Math.PI);
-                } else {
-                    ctx.arc(0, 0, canvas.width, 0, anglePerSegment);
-                }
-                ctx.closePath();
-                ctx.clip();
-                
-                // Draw the image/pattern
-                if (currentImage) {
-                    const size = Math.max(currentImage.width, currentImage.height);
-                    
-                    if (centerMirror) {
-                        // Center mirror: center of image goes to the outer edges of the kaleidoscope
-                        // We take the center portion of the image and stretch it to fill the segment
-                        const centerSize = size / 4; // Take center quarter of the image
-                        const sourceX = (currentImage.width - centerSize) / 2;
-                        const sourceY = (currentImage.height - centerSize) / 2;
-                        
-                        // Draw the center portion stretched to fill the segment
-                        ctx.drawImage(
-                            currentImage, 
-                            sourceX, sourceY, centerSize, centerSize,  // Source: center portion
-                            -centerX, -centerY, canvas.width, canvas.height // Destination: fill entire segment
-                        );
-                    } else {
-                        // Normal drawing
-                        ctx.drawImage(currentImage, -size/2, -size/2, size, size);
-                    }
-                } else {
-                    ctx.drawImage(tempCanvas, -centerX, -centerY);
-                }
-                
-                // Create mirror effect for every other segment
-                if (i % 2 === 1) {
-                    ctx.scale(-1, 1);
-                    if (currentImage) {
-                        const size = Math.max(currentImage.width, currentImage.height);
-                        
-                        if (centerMirror) {
-                            const centerSize = size / 4;
-                            const sourceX = (currentImage.width - centerSize) / 2;
-                            const sourceY = (currentImage.height - centerSize) / 2;
-                            
-                            ctx.drawImage(
-                                currentImage, 
-                                sourceX, sourceY, centerSize, centerSize,
-                                -centerX, -centerY, canvas.width, canvas.height
-                            );
-                        } else {
-                            ctx.drawImage(currentImage, -size/2, -size/2, size, size);
-                        }
-                    } else {
-                        ctx.drawImage(tempCanvas, -centerX, -centerY);
-                    }
-                }
-                
-                ctx.restore();
-            }
-        }
+    function animate(time) {
+      drawPattern(time);
+      animationFrameId = requestAnimationFrame(animate);
+    }
 
-        function animate() {
-            if (autoRotate) {
-                currentRotation += 0.5;
-                createKaleidoscope();
-                animationId = requestAnimationFrame(animate);
-            }
-        }
+    document.getElementById('start-button').addEventListener('click', () => {
+      if (!animationFrameId) animate(0);
+    });
 
-        // Event listeners
-        imageInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        currentImage = img;
-                        createKaleidoscope();
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        segmentsInput.addEventListener('input', createKaleidoscope);
-        rotationInput.addEventListener('input', createKaleidoscope);
-        scaleInput.addEventListener('input', createKaleidoscope);
-        centerMirrorInput.addEventListener('change', createKaleidoscope);
-
-        // Download functionality
-        downloadBtn.addEventListener('click', function() {
-            try {
-                // Create a temporary link element
-                const link = document.createElement('a');
-                
-                // Convert canvas to blob for better browser compatibility
-                canvas.toBlob(function(blob) {
-                    if (blob) {
-                        const url = URL.createObjectURL(blob);
-                        link.href = url;
-                        link.download = 'kaleidoscope_' + new Date().getTime() + '.png';
-                        
-                        // Temporarily add to DOM, click, then remove
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        
-                        // Clean up the blob URL
-                        URL.revokeObjectURL(url);
-                    }
-                }, 'image/png');
-            } catch (error) {
-                console.error('Download failed:', error);
-                // Fallback method
-                try {
-                    const link = document.createElement('a');
-                    link.href = canvas.toDataURL('image/png');
-                    link.download = 'kaleidoscope_' + new Date().getTime() + '.png';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                } catch (fallbackError) {
-                    alert('Download failed. Please try again or use a different browser.');
-                    console.error('Fallback download also failed:', fallbackError);
-                }
-            }
-        });
-
-        // Double-click to toggle auto-rotation
-        canvas.addEventListener('dblclick', function() {
-            autoRotate = !autoRotate;
-            if (autoRotate) {
-                animate();
-            } else {
-                cancelAnimationFrame(animationId);
-            }
-        });
-
-        // Initialize with default pattern
-        drawDefaultPattern();
-    </script>
+    document.getElementById('stop-button').addEventListener('click', () => {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    });
+  </script>
 </body>
 </html>

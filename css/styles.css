@@ -1,4 +1,3 @@
-/* General page layout */
 body {
   margin: 0;
   font-family: sans-serif;
@@ -6,64 +5,40 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  min-height: 100vh;
 }
-
 .container {
   background: white;
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   max-width: 500px;
+  width: 90%;
 }
-
-/* Navigation list on index.html */
-nav ul {
-  list-style: none;
-  padding: 0;
-  margin-top: 1rem;
+.container.home {
   text-align: left;
 }
-
-nav li {
-  margin-bottom: 0.75rem;
-  font-size: 1.1rem;
+.link-list {
+  list-style: none;
+  padding: 0;
 }
-
-nav li a {
+.link-list li {
+  margin: 0.5rem 0;
+  font-size: 1.2rem;
+}
+.link-list a {
   text-decoration: none;
-  color: #001f3f;
+  color: #007bff;
 }
-
-nav li a:hover {
+.link-list a:hover {
   text-decoration: underline;
 }
-
-nav li.freq::before {
-  content: "\223F\0020"; /* Sine wave character with space */
-  color: #E53935;
-}
-
-nav li.spectro::before {
-  content: "\266A\0020"; /* Musical note */
-  color: #1E88E5;
-}
-
-nav li.kaleidoscope::before {
-  content: "\1F4F8\0020"; /* Camera with flash (📸) */
-  color: #8E24AA;
-}
-
-/* Frequency generator styling */
 .controls {
   margin-bottom: 1rem;
 }
-
 .waveforms {
-  margin-top: 2rem; /* Space above waveform buttons */
+  margin-top: 2rem;
 }
-
 .waveform-button {
   margin: 0 0.5rem;
   padding: 0.5rem 1rem;
@@ -73,15 +48,13 @@ nav li.kaleidoscope::before {
   cursor: pointer;
   font-size: 1rem;
 }
-
 .waveform-button.active {
   background: #007bff;
   color: white;
 }
-
 #play-toggle {
   margin-top: 1rem;
-  margin-bottom: 2rem; /* Space below play button */
+  margin-bottom: 2rem;
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   border: none;
@@ -90,11 +63,9 @@ nav li.kaleidoscope::before {
   color: white;
   cursor: pointer;
 }
-
 .back-link {
   margin-top: 1rem;
 }
-
 .back-link a {
   color: #007bff;
   text-decoration: none;
