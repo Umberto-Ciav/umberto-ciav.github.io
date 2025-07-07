@@ -2,20 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>My Audio Tools Hub</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+  <!-- full‑screen animated background -->
+  <canvas id="bg"></canvas>
+
   <div class="container">
-    <h1>Welcome to my toolshed</h1>
+    <h1>Welcome to my Toolshed</h1>
     <nav>
       <ul>
-        <li><a href="frequency.html">Frequency Generator</a></li>
-	<li><a href="spectrogram.html">Live Spectrogram</a></li>
-        <!-- Add additional tool links here -->
+        <li class="freq"><a href="frequency.html">Frequency Generator</a></li>
+        <li class="spectro"><a href="spectrogram.html">Live Spectrogram</a></li>
+        <!-- future tools: use class "tool2", "tool3", etc. -->
       </ul>
     </nav>
   </div>
+
+  <script src="js/background.js"></script>
 </body>
 </html>
